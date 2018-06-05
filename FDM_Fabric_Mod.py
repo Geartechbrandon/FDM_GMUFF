@@ -29,16 +29,17 @@ import os.path
 
 
 #Will
-print('                 :::       ::: ::::::::::: :::        :::        ', '\n','               :+:       :+:     :+:     :+:        :+:         ', '\n','              +:+       +:+     +:+     +:+        +:+          ', '\n','             +#+  +:+  +#+     +#+     +#+        +#+           ', '\n','            +#+ +#+#+ +#+     +#+     +#+        +#+            ', '\n','            #+#+# #+#+#      #+#     #+#        #+#             ', '\n','            ###   ###   ########### ########## ##########       ', '\n')
+print('             :::       ::: ::::::::::: :::        :::        ', '\n','            :+:       :+:     :+:     :+:        :+:         ', '\n','            +:+       +:+     +:+     +:+        +:+          ', '\n','            +#+  +:+  +#+     +#+     +#+        +#+           ', '\n','            +#+ +#+#+ +#+     +#+     +#+        +#+            ', '\n','             #+#+# #+#+#      #+#     #+#        #+#             ', '\n','              ###   ###   ########### ########## ##########       ', '\n')
 #It
-print('                         ::::::::::: :::::::::::                 ', '\n','                           :+:         :+:                      ', '\n','                          +:+         +:+                       ', '\n','                         +#+         +#+                        ', '\n','                        +#+         +#+                         ', '\n','                       #+#         #+#                          ', '\n','                  ###########     ###                           ', '\n')                  
+print('                         ::::::::::: :::::::::::                 ', '\n','                            :+:         :+:                      ', '\n','                            +:+         +:+                       ', '\n','                            +#+         +#+                        ', '\n','                            +#+         +#+                         ', '\n','                            #+#         #+#                          ', '\n','                        ###########     ###                           ', '\n')                  
 #Print
-print('       :::::::::  :::::::::  ::::::::::: ::::    ::: ::::::::::: ', '\n','     :+:    :+: :+:    :+:     :+:     :+:+:   :+:     :+:      ', '\n','    +:+    +:+ +:+    +:+     +:+     :+:+:+  +:+     +:+       ', '\n','   +#++:++#+  +#++:++#:      +#+     +#+ +:+ +#+     +#+        ', '\n','  +#+        +#+    +#+     +#+     +#+  +#+#+#     +#+         ', '\n',' #+#        #+#    #+#     #+#     #+#   #+#+#     #+#          ', '\n','###        ###    ### ########### ###    ####     ###           ','\n')  
+print('        :::::::::  :::::::::  ::::::::::: ::::    ::: ::::::::::: ', '\n','       :+:    :+: :+:    :+:     :+:     :+:+:   :+:     :+:      ', '\n','       +:+    +:+ +:+    +:+     +:+     :+:+:+  +:+     +:+       ', '\n','       +#++:++#+  +#++:++#:      +#+     +#+ +:+ +#+     +#+        ', '\n','       +#+        +#+    +#+     +#+     +#+  +#+#+#     +#+         ', '\n','       #+#        #+#    #+#     #+#     #+#   #+#+#     #+#          ', '\n','       ###        ###    ### ########### ###    ####     ###           ','\n')  
 
 #Begining header
 print('\n','\n')
 print('Welcome to the FDM/FFF gcode modification unit for fabric (GMUFF)','\n')
-print('Please make sure this .py file is in the same directory/folder as the GCode file(s).')
+print('Please make sure this .py file is in the same directory/folder as the GCode file(s).','\n','\n')
+print('Disclaimer:','\n','Use at your own and your machine\'s risk. ', '\n', 'Modify and test this code first, ensure it works for your setup.', '\n','See the readme for more information on what/how to test, it will be updated as new information is available.','\n', 'Please report bugs, make suggestions, and branch any custom versions to help others. ')
 
 #File location
 
