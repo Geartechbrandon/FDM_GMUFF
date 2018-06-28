@@ -51,6 +51,7 @@ print('Welcome to the FDM/FFF gcode modification unit for fabric (GMUFF)','\n')
 print('Please make sure this .py file is in the same directory/folder as the GCode file(s).','\n','\n')
 print('Disclaimer:','\n','Use at your own and your machine\'s risk. ', '\n', 'Modify and test this code first, ensure it works for your setup.', '\n','See the readme for more information on what/how to test, it will be updated as new information is available.','\n', 'Please report bugs, make suggestions, and branch any custom versions to help others. ')
 print('Assumption: File is from Ultimaker CURA and in ASCii text format')
+print('Last warning is that this version doesn\'t do much with error checking.') #Delete once more sanity checks are added such as checking num etc
 
 #File name
 
@@ -64,7 +65,7 @@ machHeight = input('Printer max height (mm): ')
 liftHeight = input('Minimum height to left print head (mm): ')
 
 #wait time
-pauseTime = input('Hold time after lift (s): ')
+pauseTime = input('Hold time after lift (min): ')
 
 #interface layers
 totalNumFabrics = input('How many pieces to insert: ')
@@ -74,7 +75,7 @@ fabricThick = input('How thick is the material (mm): ')
 	#test valid number (<0.5)
 
 #interface layers begin
-begLayerNum = input('How many layers to skip before adding material: ')
+begLayerNum = input('How many layers to skip before adding material (starts at 0): ')
 	#test number is int
 		#if not report error and request new number
 		#if zero notify that gcode will be offset to print on fabric
@@ -94,20 +95,19 @@ print(begLayerNum)
 
 print (os.path.isfile(inFile))
 
-if inFile.endswith('.gcode'):                           #checks for .gcode
-    outfile = inFile[:-6] + '_ClothMod.gcode'
-    print (outfile)
-elif inFile.endswith('.txt'):                           #check for .txt file. Just a test at this time
-    outfile = inFile[:-4] + '_ClothMod.gcode'
-    print (outfile)
-elif inFile.endswith('.g'):                             #check for .g file. Just a test at this time unless it has CURA format
-    outfile = inFile[:-2] + '_ClothMod.gcode'
-    print (outfile)
-else:                                                   #catch all other error. Should loop back to file input as a test
-    print ("I don't recognize this file type")
+    if inFile.endswith('.gcode'):                           #checks for .gcode
+        outfile = inFile[:-6] + '_ClothMod.gcode'
+        print (outfile)
+    elif inFile.endswith('.txt'):                           #check for .txt file. Just a test at this time
+        outfile = inFile[:-4] + '_ClothMod.gcode'
+        print (outfile)
+    elif inFile.endswith('.g'):                             #check for .g file. Just a test at this time unless it has CURA format
+        outfile = inFile[:-2] + '_ClothMod.gcode'
+        print (outfile)
+    else:                                                   #catch all other error. Should loop back to file input as a test
+        print ("I don't recognize this file type")
 
 writeOutFile = open(outfile, 'wt')                      #opens the copy file for writing into
-counter = 0
 zInitPosition = 0                                       #variable container for z original poition
 zModPosition = 0                                        #variable container for changes in the zposition through the build
 
@@ -115,36 +115,80 @@ zModPosition = 0                                        #variable container for 
                                                             ##for instance layers below target position shrink a little (0.18 instead of 0.2)
                                                             ##some number of layers above the target are also shrunk by a little. Help spread any distorition
                                                             ##Probably would require a small flow rate adjustment for some machines
-
 zSearch ='Z'
 zPosNum = 0
-skipBegin = false
+firstLayer = ';LAYER:0"
+changeBegin = false
+        #CURA converts the input mm/s into mm/min for Marlin
+        #Time of 5 minutes hold is then 5 min to travel 10mm
+        #10mm/5min = 2mm/min
+liftHeightShort = liftHeight - 10
+holdTime = 10 / pauseTime    #mm/min
+
+        #this will get written, line by line, to the file once the firt layer has been found
+skipParameterList = ["LIFT HEIGHT", 'G0 F3600 Z' + str(liftHeightShort), ";HOLD TIME", 'G0 F' + holdTime + ' Z' +liftHeight, 'RESUME PRINTING']
 
 print(';LAYER:' + str(counter))
 print (type(counter))
 
+counter = 0
 
-#with open (inFile, 'rt') as readInFile:
-    for line in readInFile:                             #Begins testing each line in the input file
-        #Needs to test if this is a new layer and check for zhop but this is more complicated
-        ##and will need to be added into later versions
+with open (inFile, 'rt') as readInFile:                 #with opens the file and closes it once everything has been read
+    for line in readInFile:                             #Begins reading each line in the input file one at a time to 'line'
+                                                            ##Need to test if this is a new layer and check for zhop but this is more complicated
+                                                            ##and will need to be added into later versions. Possibly similar logic for processing the different gcode file types
         
-        layerNum = ';LAYER:' + str(counter)             #sets the layer variable with the counter on each loop
+       # layerNum = ';LAYER:' + str(counter)             #sets the layer with the counter on each loop
+                                                               #doesn't work because the 'line' itterates more than the layers do. This test needs to be set else where.
         lineLength = len(line)                          #reads the length of the current string variable for the current line
-        
-    if line.find(zSearch) != -1:                        #Tests if the line string contains Z (This can be generalized to some gcode programs but not all, ex Skeinforge adds Z to everyline)
-        zPosNum = line.find(zSearch)
-        zInitPoition = line[zPosNum + 1:]
 
-        if (sipBegin == true)
+    #Find zero layer ;LAYER:0
+        if (begLayerNum == 0):
+            print ("Printing on fabric.")
+            changeBegin = true
             
+        elif (line == firstLayer):
+            print ("First layer found. Zero")
+            changeBegin = true
+         #ends beginning layer search. find() outputs either -1 if not found or the index of the character(s) in the searched string
+        zLineGrab = line.find(zSearch)                
+    #write non changed lines to file
+        if (changeBegin == true and zLineGrab != (-1)):
+            #break line into movement and zNumber
+            #Add the fabric thickness to the zheight
+        else
+            writeOutFile.write(line)
+    #modify 
+
+
+
+
+    #if line.find(zSearch) != -1:                        #Tests if the line string contains Z (This can be generalized to some gcode programs but not all, ex Skeinforge adds Z to everyline)
+    #    zPosNum = line.find(zSearch)
+    #    zInitPoition = line[zPosNum + 1:]
+
+        #if (skipBegin == true and line == layerNum)     #Signals that next line is to 
+        #    nextLineGrab = true
+
+   
         
-        elif (counter == begLayerNum and line == layerNum):       #tests that both cases are true
+        
+        elif (counter == begLayerNum):       #tests that both cases are true
+            skipBegin = true
+            origLine = line
+            truncateLine = line[zPosNum:]
+             
+            editLine = truncateLine + 
+            
+        elif (line == layerNum):
+            ++counter
             
             
+            writeOutFile.write(line)
+                       
          
 
-        else:                                           #writes line to file
+    else:                                           #writes line to file
             writeOutFile.write(line)
             
     ++counter
