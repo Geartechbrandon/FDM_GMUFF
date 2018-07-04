@@ -11,7 +11,7 @@
 #        ______\///____\///_______\///////////__\///________________\/////////_____\////////////_____
 
 
-#Released 06/ /2018
+#Released 07/ /2018
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
@@ -94,11 +94,11 @@ print(fabricThick)
 print(begLayerNum)
 
 print (os.path.isfile(inFile))
-
+                                                    #
     if inFile.endswith('.gcode'):                           #checks for .gcode
         outfile = inFile[:-6] + '_ClothMod.gcode'
         print (outfile)
-    elif inFile.endswith('.txt'):                           #check for .txt file. Just a test at this time
+    elif inFile.endswith('.txt'):                           #check for .txt file. Just at test at this time
         outfile = inFile[:-4] + '_ClothMod.gcode'
         print (outfile)
     elif inFile.endswith('.g'):                             #check for .g file. Just a test at this time unless it has CURA format
@@ -108,8 +108,9 @@ print (os.path.isfile(inFile))
         print ("I don't recognize this file type")
 
 writeOutFile = open(outfile, 'wt')                      #opens the copy file for writing into
-zInitPosition = 0                                       #variable container for z original poition
-zModPosition = 0                                        #variable container for changes in the zposition through the build
+
+#zInitPosition = 0                                       #variable container for z original poition
+#zModPosition = 0                                        #variable container for changes in the zposition through the build
 
                                                         #Consider adding intelligence to spread the layer jump throughut the build
                                                             ##for instance layers below target position shrink a little (0.18 instead of 0.2)
@@ -117,7 +118,7 @@ zModPosition = 0                                        #variable container for 
                                                             ##Probably would require a small flow rate adjustment for some machines
 zSearch ='Z'
 zPosNum = 0
-firstLayer = ';LAYER:0"
+firstLayer = ';LAYER:0'
 changeBegin = false
         #CURA converts the input mm/s into mm/min for Marlin
         #Time of 5 minutes hold is then 5 min to travel 10mm
@@ -146,15 +147,23 @@ with open (inFile, 'rt') as readInFile:                 #with opens the file and
         if (begLayerNum == 0):
             print ("Printing on fabric.")
             changeBegin = true
-            
+            #Insert skipParameterList            
         elif (line == firstLayer):
-            print ("First layer found. Zero")
+            print ("Fabric layer found.")
             changeBegin = true
+            #Insert skipParameterList                   Should write all this to the file (doesn't need to know what the z layer was/should be yet) then get z layer info on next loop
+
          #ends beginning layer search. find() outputs either -1 if not found or the index of the character(s) in the searched string
         zLineGrab = line.find(zSearch)                
     #write non changed lines to file
         if (changeBegin == true and zLineGrab != (-1)):
             #break line into movement and zNumber
+            zLineGrab = zLineGrab + 1
+            stringLength = lineLength - zLineGrab
+            zStartPos = line[zLineGrab:]
+            zStartPos = int(zStartPos)
+            zEndPosition = zStartPos + fabrickThick
+
             #Add the fabric thickness to the zheight
         else
             writeOutFile.write(line)
