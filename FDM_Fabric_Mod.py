@@ -89,7 +89,6 @@ while (fileTest == True):
 		if (lengthOfFirstLine > lengthOfRefLine):
 			firstLineInFile = firstLineInFile[0:35]
 			#print(firstLineInFile)
-
 		if (firstLineInFile == fileIsS3D):
 			raftCheckTest = True
 			#print('Found S3D')
@@ -166,7 +165,6 @@ if(totalNumFabrics > 1):
 		except:
 			print ("That doesn't seem to be a valid number.")
 		else:
-			#add reject <0
 			if (layersBetweenFabric == 0):
 				fabricQuestionTest = True
 				while (fabricQuestionTest == True):
@@ -189,10 +187,10 @@ if(totalNumFabrics > 1):
 			else:
 				fabricSpacingTest = False
 
-#Print layer where interface layers begin
+#Printing layer where interface layers begin
 while (begLayerNumTest == True):
 	try:
-		begLayerNum = int(input('What layer do we start printing on (CURA starts at 0): '))
+		begLayerNum = int(input('What layer do we start printing on (First layer is on 0): '))
 	except:
 		print ("That doesn't seem to be a valid number.") 
 	else:
@@ -204,6 +202,7 @@ while (begLayerNumTest == True):
 
 
 #If S3D check for Raft
+#This isn't needed for CURA as the rafts are listed with negative layers
 while (raftCheckTest): 
 	buildingOnRaft = input("Printing on a raft? (Y/N)")   #Choosing Y or N we need to ensure valid input for both cases and incorrect input.
 	buildingOnRaft = buildingOnRaft[0].upper()
@@ -213,13 +212,13 @@ while (raftCheckTest):
 		except:
 			print ("That doesn't seem to be a valid number.")
 		else:
+			begLayerNum = begLayerNum + numRaftLayers
 			raftCheckTest = False
-			begLayerNumTest = False
 	elif (buildingOnRaft == "N"):
 		raftCheckTest = False
-		begLayerNumTest = False
 	else:
 		print (buildingOnRaft, ' is not something I recognize.')
+		raftCheckTest = True
 
 
 #Height to lift print head
@@ -239,6 +238,10 @@ while (liftHeightTest == True):
                 liftHeightTest = True
             else:
                 liftHeightTest = False
+
+#Lenght of time to hold the print head above the print
+#This actually will be a very slow lift over 10mm as not all firmware supports a stop and start
+#There might be a way to run a wait command in the arduino but this seemed the most reliable solution today
 while (pauseTimeTest == True):
     #wait time
     try:
