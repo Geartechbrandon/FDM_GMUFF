@@ -11,9 +11,7 @@
 #        ______\///____\///_______\///////////__\///________________\/////////_____\////////////_____
 
 
-
 #Released 11/ /2018
-
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
@@ -42,7 +40,6 @@ print('             :::       ::: ::::::::::: :::        :::        ', '\n','   
 print('                         ::::::::::: :::::::::::                 ', '\n','                            :+:         :+:                      ', '\n','                            +:+         +:+                       ', '\n','                            +#+         +#+                        ', '\n','                            +#+         +#+                         ', '\n','                            #+#         #+#                          ', '\n','                        ###########     ###                           ', '\n')                  
 #Print
 print('        :::::::::  :::::::::  ::::::::::: ::::    ::: ::::::::::: ', '\n','       :+:    :+: :+:    :+:     :+:     :+:+:   :+:     :+:      ', '\n','       +:+    +:+ +:+    +:+     +:+     :+:+:+  +:+     +:+       ', '\n','       +#++:++#+  +#++:++#:      +#+     +#+ +:+ +#+     +#+        ', '\n','       +#+        +#+    +#+     +#+     +#+  +#+#+#     +#+         ', '\n','       #+#        #+#    #+#     #+#     #+#   #+#+#     #+#          ', '\n','       ###        ###    ### ########### ###    ####     ###           ','\n')  
-
 
 #Pause to show my spiffy vintage logo.
 time.sleep(5.5)
@@ -106,18 +103,15 @@ while (fileTest == True):
 		fileTest = False
 
 #Maximum height of printer
-
 while (heightTest == True):
     try:
         machHeight = float(input('Printer max height (mm): '))
     except:
         #Extra characters or anything that makes the variable become a non-integer gets caught
-
         print ("That doesn't seem to be a valid number.")
     else:
         if (machHeight <= 10):
             print ("Typo? A machine height of only ", machHeight," doesn't give adequate room for the head to lift with this program.")
-
             #Not much room to move the head so the fabric can be burned, head shifted, or injury can occur
         elif (machHeight < 100):
             print ("A machine with height of only ", machHeight," is pretty small for this process. Please be careful to avoid burns.")
@@ -128,7 +122,6 @@ while (heightTest == True):
 
 
 #Material thickness
-
 while (fabricThickTest == True):
     try:      
         #layer height to skip
@@ -142,7 +135,6 @@ while (fabricThickTest == True):
             print ("Material must have a thickness greater than zero")
             fabricThickTest = True
         else:
-
             #Currently there is no extrusion multiplier for the layer jump so it's risky to skip more than 1.5x the layer thickness as there will be little to no layer to layer bonding
             if (fabricThick > 0.5):
                 print ("Fabric layer greater than 0.5 mm can cause problems with layer adhesion at this time.","\nGood guide rule is to keep the fabric layer less than 1.5 times the layer thickness.")
@@ -246,9 +238,7 @@ while (liftHeightTest == True):
             liftHeightTest = True
         else:
             if (liftHeight <= fabricThick) and (begLayerNum == 0):
-
                 print ("Need to lift the head higher than the fabric layer thickness of ", fabricThick, " .")
-
                 liftHeightTest = True
             else:
                 liftHeightTest = False
@@ -290,6 +280,7 @@ while (pauseTimeTest == True):
 			pauseTimeTest = False
 print("Parsing File")
 
+
 #DebugTests
 #print(inFile) 
 #print(machHeight)
@@ -299,7 +290,6 @@ print("Parsing File")
 #print(fabricThick)
 #print(begLayerNum)
 #print (os.path.isfile(inFile))
-
 dontWriteFile = True
 fileVersionNum = 0
 
@@ -352,12 +342,12 @@ if (fileIsS3D):
 else:
 	firstLayer = layerCURAFormat + str(begLayerNum) + "\n"
 
+
 print ("First layer starts on: ",firstLayer)
 changeBegin = False
         #CURA converts the input mm/s into mm/min for Marlin
         #Time of 5 minutes hold is then 5 min to travel 10mm
         #10mm/5min = 2mm/min
-
 liftHeightShort = liftHeight - 10  #Buffer so the lift head can use the last 10 mm to move since many machines cannot start and stop movement.
 holdTime = 10 / pauseTime    #mm/min
 
@@ -374,7 +364,7 @@ with open (outfile, 'wt') as writeOutFile:                      #opens the copy 
 			#Checks to see if the first layer is found
 			if (line == firstLayer):
 				changeBegin = True    
-			else:
+			elif (changeBegin == False):
 				writeOutFile.write(line)
 
 			#Once first layer is found begin inserting pauses and Z height modifications
@@ -415,4 +405,3 @@ with open (outfile, 'wt') as writeOutFile:                      #opens the copy 
 
 				else:
 					writeOutFile.write(line)
-
