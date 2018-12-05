@@ -42,7 +42,7 @@ print('                         ::::::::::: :::::::::::                 ', '\n',
 print('        :::::::::  :::::::::  ::::::::::: ::::    ::: ::::::::::: ', '\n','       :+:    :+: :+:    :+:     :+:     :+:+:   :+:     :+:      ', '\n','       +:+    +:+ +:+    +:+     +:+     :+:+:+  +:+     +:+       ', '\n','       +#++:++#+  +#++:++#:      +#+     +#+ +:+ +#+     +#+        ', '\n','       +#+        +#+    +#+     +#+     +#+  +#+#+#     +#+         ', '\n','       #+#        #+#    #+#     #+#     #+#   #+#+#     #+#          ', '\n','       ###        ###    ### ########### ###    ####     ###           ','\n')  
 
 #Pause to show my spiffy vintage logo.
-time.sleep(5.5)
+time.sleep(1.5)
 #Clear screen on Windows, uncomment. Compiled version will be expecting Windows execution and is uncommented to look vintage.
 clearScreenVariable = os.system('cls')
 #Clear screen for Linux and OSX, uncomment. (just trying to be cool and old school, there is no point to doing this.)
@@ -338,9 +338,9 @@ layerS3DFormat = "; layer "
 layerCURAFormat = ";LAYER:"
 if (fileIsS3D):
 	#S3D ref: "; layer 1, Z = 0.750"	need to only comapre between [0,8]
-	firstLayer = layerS3DFormat + str(begLayerNum) + "\n"                 #Python brings in every line ending with \n so our test needs to match it
+	firstLayer = layerS3DFormat + str(begLayerNum)                
 else:
-	firstLayer = layerCURAFormat + str(begLayerNum) + "\n"
+	firstLayer = layerCURAFormat + str(begLayerNum) + "\n"  #Python brings in every line ending with \n so our test needs to match it
 
 
 print ("First layer starts on: ",firstLayer)
@@ -356,6 +356,9 @@ layerNumCheckInt = begLayerNum    #initialize layer writing and checks
 currentLayerString = firstLayer   #initialzie for first layer
 changeBegin = False								#Initialize loop to not run until first fabric layer is found
 counter = 0
+layerString = "layer"
+stringS3DLayer = False
+
 with open (outfile, 'wt') as writeOutFile:                      #opens the copy file for writing into and closes when the loop is completed
 	with open (origGcodeFile, 'rt') as readInFile:                 #with opens the file and closes it once everything has been read
 		for line in readInFile:                             #Begins reading each line in the input file one at a time to 'line'
@@ -371,27 +374,36 @@ with open (outfile, 'wt') as writeOutFile:                      #opens the copy 
 			if(changeBegin == True):
 				#check for layer line
 				#Might want to make the initial lift speed a user choice
+				if (fileIsS3D):
+					layerStringSearch = line.find(layerString)
+					stringS3DLayer = (layerStringSearch != (-1))
+
+					if(stringS3DLayer):
+						line =line[:8]
+
 				if (line == currentLayerString):
 					writeOutFile.write(line)
 					#Written, line by line, to the file once the fabric layer has been found; needs to be altered depending upon number of fabric pieces
-					skipParameterList = [";LIFT HEIGHT\n", 'G0 F3600 Z' + str(liftHeightShort), ";QUICK LIFT\n", 'G0 F' + str(holdTime) + ' Z' + str(liftHeight), ';HOLD TIME\n']
+					skipParameterList = ["\n", 'G0 F3600 Z' + str(liftHeightShort), ";LIFT HEIGHT\n", 'G0 F' + str(holdTime) + ' Z' + str(liftHeight), ';HOLD TIME\n']
 					#tells printer to lift quickly to user set height, printer lift slowly to total lift height where speed is the time for the printer to wait.
 					writeOutFile.writelines(skipParameterList)
 					counter = counter + 1
 
 					if (counter < totalNumFabrics):
-						nextLayerChange = begLayerNum + layersBetweenFabric
+						nextLayerChange = begLayerNum + layersBetweenFabric + 1
 						if (fileIsS3D):
 							#S3D ref: "; layer 1, Z = 0.750"	need to only comapre between [0,8]
 							nextLayer = layerS3DFormat + str(nextLayerChange)
 						else:
-							nextLayer = layerCURAFormat + str(nextLayerChange)
+							nextLayer = layerCURAFormat + str(nextLayerChange) + "\n"
 					
 						currentLayerString = nextLayer
 
 				if (fabricThick != 0):							#Should the user just want a pause (ex. insert magnets) then there is no need to compute this change
 					zLineGrab = line.find(zSearch)            #This will need to run for always once we've changed layers because every  needs to be altered  
-					if(zLineGrab != (-1)):
+					zTest = (zLineGrab != (-1))
+
+					if(zTest and not stringS3DLayer):
 						#break line into movement and zNumber
 						zLinePositionBeg = zLineGrab + 1         #Beginning of z position number     
 						skipLineEnd = len(line)	- 1		
@@ -402,6 +414,8 @@ with open (outfile, 'wt') as writeOutFile:                      #opens the copy 
 						modifiedLine = zMoveString + str(zEndPosition) + "\n"                #Combine back into a string
 
 						writeOutFile.write(modifiedLine)                  #Write modification to file
+					else:
+						writeOutFile.write(line)
 
 				else:
 					writeOutFile.write(line)
