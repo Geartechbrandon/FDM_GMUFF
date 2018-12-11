@@ -58,7 +58,7 @@ print('Assumption: File is from Ultimaker CURA or S3D and in ASCii text format',
 
 #Iitializations for while statements, can quickly disable inputs to focus testing (this will often cause the program to fail but makes for quick and dirty debugging)
 fileTest = True
-heightTest = True
+heightTest = False #this isn't being used effectively right now so there isn't any reason to ask it
 fabricThickTest = True
 totalNumFabricTest = True
 begLayerNumTest = True
@@ -125,7 +125,7 @@ while (heightTest == True):
 while (fabricThickTest == True):
     try:      
         #layer height to skip
-        fabricThick = float(input('How thick is the material (mm): '))
+        fabricThick = float(input('How large a gap to leave for material (mm): '))
     except:
         #Extra characters or anyhting that makes the variable become a non-integer gets caught
         print ("That doesn't seem to be a valid number.")
@@ -169,24 +169,24 @@ if(totalNumFabrics > 1):
 		except:
 			print ("That doesn't seem to be a valid number.")
 		else:
-			if (layersBetweenFabric == 0):
-				fabricQuestionTest = True
-				while (fabricQuestionTest == True):
-					print (layersBetweenFabric, 'layers between fabric.')
-					confirmNothingBetween = input('Is this correct? (Y,N) ')
-					confirmNothingBetween = confirmNothingBetween[0].upper()
-					if (confirmNothingBetween == "Y"):
-						fabricQuestionTest = False
-						fabricSpacingTest = False
-					elif (confirmNothingBetween == "N"):
-						fabricQuestionTest = False
-						fabricSpacingTest = True
-					else:
-						print (confirmNothingBetween, 'is not a valid input.')
-						fabricQuestionTest = True
-						fabricSpacingTest = True
-			elif (layersBetweenFabric < 0):
-				print( layersBetweenFabric, ' must be at least 0.' )
+#			if (layersBetweenFabric == 0):
+#				fabricQuestionTest = True
+#				while (fabricQuestionTest == True):
+#					print (layersBetweenFabric, 'layers between fabric.')
+#					confirmNothingBetween = input('Is this correct? (Y,N) ')
+#					confirmNothingBetween = confirmNothingBetween[0].upper()
+#					if (confirmNothingBetween == "Y"):
+#						fabricQuestionTest = False
+#						fabricSpacingTest = False
+#					elif (confirmNothingBetween == "N"):
+#						fabricQuestionTest = False
+#						fabricSpacingTest = True
+#					else:
+#						print (confirmNothingBetween, 'is not a valid input.')
+#						fabricQuestionTest = True
+#						fabricSpacingTest = True
+			if (layersBetweenFabric < 1):
+				print( layersBetweenFabric, ' must be at least 1.' )
 				fabricSpacingTest = True
 			else:
 				fabricSpacingTest = False
@@ -228,20 +228,20 @@ while (raftCheckTest):
 #Height to lift print head
 while (liftHeightTest == True):
     try:
-        liftHeight = float(input('Minimum height to lift printer head (mm): '))
+        liftHeight = float(input('Height position to lift printer head to (mm): '))
     except:
         #Extra characters or anything that makes the variable become a non-integer gets caught
         print ("That doesn't seem to be a valid number.")
     else:
-        if (liftHeight >= machHeight):
-            print ("The machine height is ", machHeight," so the lifting height must be less than this.")
-            liftHeightTest = True
-        else:
-            if (liftHeight <= fabricThick) and (begLayerNum == 0):
-                print ("Need to lift the head higher than the fabric layer thickness of ", fabricThick, " .")
-                liftHeightTest = True
-            else:
-                liftHeightTest = False
+ #       if (liftHeight >= machHeight):
+ #           print ("The machine height is ", machHeight," so the lifting height must be less than this.")
+ #           liftHeightTest = True
+ #       else:
+         if (liftHeight <= fabricThick) and (begLayerNum == 0):
+             print ("Need to lift the head higher than the fabric layer thickness of ", fabricThick, " .")
+             liftHeightTest = True
+         else:
+             liftHeightTest = False
 
 #Lenght of time to hold the print head above the print
 #This actually will be a very slow lift over 10mm as not all firmware supports a stop and start
@@ -338,13 +338,14 @@ layerS3DFormat = "; layer "
 layerCURAFormat = ";LAYER:"
 if (fileIsS3D):
 	#S3D ref: "; layer 1, Z = 0.750"	need to only comapre between [0,8]
-	firstLayer = layerS3DFormat + str(begLayerNum)                
+	firstLayer = layerS3DFormat + str(begLayerNum) 
+	layerString = layerS3DFormat
 else:
 	firstLayer = layerCURAFormat + str(begLayerNum) + "\n"  #Python brings in every line ending with \n so our test needs to match it
+	layerString = layerCURAFormat
 
 
 print ("First layer starts on: ",firstLayer)
-changeBegin = False
         #CURA converts the input mm/s into mm/min for Marlin
         #Time of 5 minutes hold is then 5 min to travel 10mm
         #10mm/5min = 2mm/min
@@ -356,7 +357,6 @@ layerNumCheckInt = begLayerNum    #initialize layer writing and checks
 currentLayerString = firstLayer   #initialzie for first layer
 changeBegin = False								#Initialize loop to not run until first fabric layer is found
 counter = 0
-layerString = "layer"
 stringS3DLayer = False
 
 with open (outfile, 'wt') as writeOutFile:                      #opens the copy file for writing into and closes when the loop is completed
@@ -365,7 +365,12 @@ with open (outfile, 'wt') as writeOutFile:                      #opens the copy 
 			lineLength = len(line)                          #reads the length of the current string variable for the current line
 
 			#Checks to see if the first layer is found
-			if (line == firstLayer):
+			if (fileIsS3D):
+				selectLength = len(currentLayerString)
+				lineTest = line[:selectLength]
+			else:
+				lineTest = line
+			if (lineTest == firstLayer):
 				changeBegin = True    
 			elif (changeBegin == False):
 				writeOutFile.write(line)
@@ -378,19 +383,22 @@ with open (outfile, 'wt') as writeOutFile:                      #opens the copy 
 					layerStringSearch = line.find(layerString)
 					stringS3DLayer = (layerStringSearch != (-1))
 
-					if(stringS3DLayer):
-						line =line[:8]
+					#if(stringS3DLayer):
+					#	line =line[:selectLength]
 
-				if (line == currentLayerString):
+				if (lineTest == currentLayerString):
+
 					writeOutFile.write(line)
 					#Written, line by line, to the file once the fabric layer has been found; needs to be altered depending upon number of fabric pieces
-					skipParameterList = ["\n", 'G0 F3600 Z' + str(liftHeightShort), ";LIFT HEIGHT\n", 'G0 F' + str(holdTime) + ' Z' + str(liftHeight), ';HOLD TIME\n']
+					skipParameterList = [";FABRIC LAYER", str(counter + 1) ,"\n", 'G0 F3600 Z' + str(liftHeightShort), ";LIFT HEIGHT\n", 'G0 F' + str(holdTime) + ' Z' + str(liftHeight), ';HOLD TIME\n']
 					#tells printer to lift quickly to user set height, printer lift slowly to total lift height where speed is the time for the printer to wait.
 					writeOutFile.writelines(skipParameterList)
-					counter = counter + 1
+					holder = counter + 1
+					counter = holder
 
-					if (counter < totalNumFabrics):
-						nextLayerChange = begLayerNum + layersBetweenFabric + 1
+
+					if (holder < totalNumFabrics):
+						nextLayerChange = begLayerNum + (layersBetweenFabric * counter)
 						if (fileIsS3D):
 							#S3D ref: "; layer 1, Z = 0.750"	need to only comapre between [0,8]
 							nextLayer = layerS3DFormat + str(nextLayerChange)
@@ -405,11 +413,15 @@ with open (outfile, 'wt') as writeOutFile:                      #opens the copy 
 
 					if(zTest and not stringS3DLayer):
 						#break line into movement and zNumber
-						zLinePositionBeg = zLineGrab + 1         #Beginning of z position number     
-						skipLineEnd = len(line)	- 1		
+						zLinePositionBeg = zLineGrab + 1         #Beginning of z position number 
+						fLinePosition = line.find("F")
+						if (fileIsS3D):
+							skipLineEnd = fLinePosition
+						else:
+							skipLineEnd = len(line)	- 1		
 						zMoveString = line[:zLinePositionBeg]           #String of all date before numeric current layer height ex. "position and speed stuff Z"
 						currentZPosition = float(line[zLinePositionBeg:skipLineEnd])    #Converts line segement into float of current z position
-						fabricCounter = float(counter)                     #Convert int to float deliberately to avoid any potential issues
+						fabricCounter = counter                     #Convert int to float deliberately to avoid any potential issues
 						zEndPosition = currentZPosition + (fabricThick * (fabricCounter))       #Modify z height
 						modifiedLine = zMoveString + str(zEndPosition) + "\n"                #Combine back into a string
 
