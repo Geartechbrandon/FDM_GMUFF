@@ -357,6 +357,7 @@ layerNumCheckInt = begLayerNum    #initialize layer writing and checks
 currentLayerString = firstLayer   #initialzie for first layer
 changeBegin = False								#Initialize loop to not run until first fabric layer is found
 counter = 0
+holder = 0
 stringS3DLayer = False
 
 with open (outfile, 'wt') as writeOutFile:                      #opens the copy file for writing into and closes when the loop is completed
@@ -386,7 +387,7 @@ with open (outfile, 'wt') as writeOutFile:                      #opens the copy 
 					#if(stringS3DLayer):
 					#	line =line[:selectLength]
 
-				if (lineTest == currentLayerString):
+				if (lineTest == currentLayerString and (holder < totalNumFabrics)):
 
 					writeOutFile.write(line)
 					#Written, line by line, to the file once the fabric layer has been found; needs to be altered depending upon number of fabric pieces
@@ -396,16 +397,14 @@ with open (outfile, 'wt') as writeOutFile:                      #opens the copy 
 					holder = counter + 1
 					counter = holder
 
-
-					if (holder < totalNumFabrics):
-						nextLayerChange = begLayerNum + (layersBetweenFabric * counter)
-						if (fileIsS3D):
-							#S3D ref: "; layer 1, Z = 0.750"	need to only comapre between [0,8]
-							nextLayer = layerS3DFormat + str(nextLayerChange)
-						else:
-							nextLayer = layerCURAFormat + str(nextLayerChange) + "\n"
+					nextLayerChange = begLayerNum + (layersBetweenFabric * counter)
+					if (fileIsS3D):
+						#S3D ref: "; layer 1, Z = 0.750"	need to only comapre between [0,8]
+						nextLayer = layerS3DFormat + str(nextLayerChange)
+					else:
+						nextLayer = layerCURAFormat + str(nextLayerChange) + "\n"
 					
-						currentLayerString = nextLayer
+					currentLayerString = nextLayer
 
 				if (fabricThick != 0):							#Should the user just want a pause (ex. insert magnets) then there is no need to compute this change
 					zLineGrab = line.find(zSearch)            #This will need to run for always once we've changed layers because every  needs to be altered  
