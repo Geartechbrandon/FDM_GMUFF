@@ -349,8 +349,8 @@ print ("First layer starts on: ",firstLayer)
         #CURA converts the input mm/s into mm/min for Marlin
         #Time of 5 minutes hold is then 5 min to travel 10mm
         #10mm/5min = 2mm/min
-liftHeightShort = liftHeight - 10  #Buffer so the lift head can use the last 10 mm to move since many machines cannot start and stop movement.
-holdTime = 10 / pauseTime    #mm/min
+liftHeightShort = liftHeight - 20  #Buffer so the lift head can use the last 10 mm to move since many machines cannot start and stop movement.
+holdTime = 20 / pauseTime    #mm/min
 
 
 layerNumCheckInt = begLayerNum    #initialize layer writing and checks
@@ -391,7 +391,7 @@ with open (outfile, 'wt') as writeOutFile:                      #opens the copy 
 
 					writeOutFile.write(line)
 					#Written, line by line, to the file once the fabric layer has been found; needs to be altered depending upon number of fabric pieces
-					skipParameterList = [";FABRIC LAYER", str(counter + 1) ,"\n", 'G0 F3600 Z' + str(liftHeightShort), ";LIFT HEIGHT\n", 'G0 F' + str(holdTime) + ' Z' + str(liftHeight), ';HOLD TIME\n']
+					skipParameterList = ['; FABRIC LAYER', str(counter + 1) ,'\n', 'G0 F3600 Z' + str(liftHeightShort),';LIFT HEIGHT\n', 'G0 F' + str(holdTime) + ' Z' + str(liftHeight), ';HOLD TIME\n', 'G0 F3600\n']
 					#tells printer to lift quickly to user set height, printer lift slowly to total lift height where speed is the time for the printer to wait.
 					writeOutFile.writelines(skipParameterList)
 					holder = counter + 1
