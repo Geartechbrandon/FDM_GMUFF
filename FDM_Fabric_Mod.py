@@ -65,7 +65,7 @@ begLayerNumTest = True
 liftHeightTest = True
 pauseTimeTest = True
 fabricSpacingTest = True
-raftCheckTest = True
+raftCheckTest = False
 
 #intialized variables
 fileIsS3D = False
@@ -94,7 +94,7 @@ while (fileTest == True):
 			#print(firstLineInFile)
 		if (firstLineInFile == fileS3DString):
 			fileIsS3D = True
-			raftCheckTest = True
+			raftCheckTest = False
 			#print('Found S3D')
 			#print(firstLineInFile)
 		else:
@@ -190,6 +190,9 @@ if(totalNumFabrics > 1):
 				fabricSpacingTest = True
 			else:
 				fabricSpacingTest = False
+else:
+	layersBetweenFabric = 1
+
 
 #Printing layer where interface layers begin
 while (begLayerNumTest == True):
@@ -204,10 +207,9 @@ while (begLayerNumTest == True):
 		else:
 			begLayerNumTest = False
 
-
 #If S3D check for Raft
 #This isn't needed for CURA as the rafts are listed with negative layers
-while (raftCheckTest): 
+while (raftCheckTest == True): 
 	buildingOnRaft = input("Printing on a raft? (Y/N)")   #Choosing Y or N we need to ensure valid input for both cases and incorrect input.
 	buildingOnRaft = buildingOnRaft[0].upper()
 	if (buildingOnRaft == "Y"):
@@ -427,6 +429,3 @@ with open (outfile, 'wt') as writeOutFile:                      #opens the copy 
 						writeOutFile.write(modifiedLine)                  #Write modification to file
 					else:
 						writeOutFile.write(line)
-
-				else:
-					writeOutFile.write(line)
